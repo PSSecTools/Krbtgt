@@ -1,6 +1,6 @@
 ﻿@{
 	# Script module or binary module file associated with this manifest
-	ModuleToProcess   = 'Krbtgt.psm1'
+	RootModule	      = 'Krbtgt.psm1'
 	
 	# Version number of this module.
 	ModuleVersion	  = '1.0.0'
@@ -36,7 +36,7 @@
 	# TypesToProcess = @('xml\Krbtgt.Types.ps1xml')
 	
 	# Format files (.ps1xml) to be loaded when importing this module
-	FormatsToProcess = @('xml\Krbtgt.Format.ps1xml')
+	FormatsToProcess  = @('xml\Krbtgt.Format.ps1xml')
 	
 	# Functions to export from this module
 	FunctionsToExport = @(
