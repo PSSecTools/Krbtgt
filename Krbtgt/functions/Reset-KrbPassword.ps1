@@ -57,10 +57,10 @@
 		$PDCEmulator,
 		
 		[int]
-		$MaxDurationSeconds = 180,
+		$MaxDurationSeconds = (Get-PSFConfigValue -FullName 'Krbtgt.Reset.MaxDurationSeconds' -Fallback 100),
 		
 		[int]
-		$DCSuccessPercent = 100,
+		$DCSuccessPercent = (Get-PSFConfigValue -FullName 'Krbtgt.Reset.DCSuccessPercent' -Fallback 100),
 		
 		[switch]
 		$SkipTest,
