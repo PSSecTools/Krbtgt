@@ -15,6 +15,11 @@ Write-PSFMessage -Level Important -Message "Starting Tests"
 
 Write-PSFMessage -Level Important -Message "Importing Module"
 
+# Fake AD Module for automated testing in AzDev
+if ($env:SYSTEM_DEFAULTWORKINGDIRECTORY) {
+	New-Module -Name ActiveDirectory -ScriptBlock { } | Import-Module
+}
+
 Remove-Module Krbtgt -ErrorAction Ignore
 Import-Module "$PSScriptRoot\..\Krbtgt.psd1"
 Import-Module "$PSScriptRoot\..\Krbtgt.psm1" -Force

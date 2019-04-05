@@ -2,3 +2,4 @@
 # In the order they are loaded during preimport
 
 internal\scripts\strings.ps1
+internal\scripts\preExecutionInit.ps1
