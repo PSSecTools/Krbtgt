@@ -4,7 +4,7 @@ $script:ModuleRoot = $PSScriptRoot
 $script:ModuleVersion = (Import-PowerShellDataFile -Path "$($script:ModuleRoot)\Krbtgt.psd1").ModuleVersion
 
 # Detect whether at some level dotsourcing was enforced
-$script:doDotSource = Get-PSFConfigValue -FullName Krbtgt.Import.DoDotSource -Fallback $false
+$script:doDotSource = Get-PSFConfigValue -FullName Krbtgt.Import.DoDotSource -Fallback $true
 if ($Krbtgt_dotsourcemodule) { $script:doDotSource = $true }
 
 <#
