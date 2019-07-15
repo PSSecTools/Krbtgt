@@ -51,6 +51,23 @@
 	
 	begin
 	{
+		#region Ensure Domain Controller parameter is filled
+		if (-not $DomainController)
+		{
+			try
+			{
+				$DomainController = (Get-ADDomainController -Server $PDCEmulator -Filter * -ErrorAction Stop).HostName | Where-Object {
+					$_ -ne $PDCEmulator
+				}
+			}
+			catch
+			{
+				Stop-PSFFunction -String 'Test-KrbPasswordReset.FailedDCResolution' -StringValues $PDCEmulator -ErrorRecord $_
+				return
+			}
+		}
+		#endregion Ensure Domain Controller parameter is filled
+		
 		#region Create a test account to test SO replication with
 		try
 		{
@@ -64,19 +81,6 @@
 			return
 		}
 		#endregion Create a test account to test SO replication with
-		
-		#region Ensure Domain Controller parameter is filled
-		if (-not $DomainController)
-		{
-			try
-			{
-				$DomainController = (Get-ADDomainController -Server $PDCEmulator -Filter * -ErrorAction Stop).HostName | Where-Object {
-					$_ -ne $PDCEmulator
-				}
-			}
-			catch { throw }
-		}
-		#endregion Ensure Domain Controller parameter is filled
 	}
 	process
 	{
