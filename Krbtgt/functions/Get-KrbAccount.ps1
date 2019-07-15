@@ -93,7 +93,7 @@
 		}
 		#endregion Retrieve Kerberos Policies
 		
-		# This calculates the latest validity time time of existing krbtgt tickets from before the last reset might have.
+		# This calculates the latest validity time of existing krbtgt tickets from before the last reset might have.
 		# Resetting the krbtgt password again before this expiry time risks preventing DCs from synchronizing the password on the second reset!
 		$result.EarliestResetTimestamp = (($Krbtgt.PasswordLastSet.AddHours($result.MaxTgtLifetimeHours)).AddMinutes($result.MaxClockSkewMinutes)).AddMinutes($result.MaxClockSkewMinutes)
 		
