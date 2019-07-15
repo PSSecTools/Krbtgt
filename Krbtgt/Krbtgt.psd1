@@ -3,7 +3,7 @@
 	RootModule	      = 'Krbtgt.psm1'
 	
 	# Version number of this module.
-	ModuleVersion	  = '1.0.0'
+	ModuleVersion	  = '1.0.1'
 	
 	# ID used to uniquely identify this module
 	GUID			  = '38a69268-94ad-40ff-93df-c31ad079183a'

@@ -66,7 +66,7 @@
 		#endregion Create a test account to test SO replication with
 		
 		#region Ensure Domain Controller parameter is filled
-		if (Test-PSFParameterBinding -ParameterName 'DomainController')
+		if (-not $DomainController)
 		{
 			try
 			{
