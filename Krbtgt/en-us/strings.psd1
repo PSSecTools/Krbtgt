@@ -51,6 +51,7 @@
 	'Sync-KrbAccount.Connecting'				    = 'Connecting to "{0}" in order to synchronize {1}'
 	'Sync-KrbAccount.ConnectError'				    = 'Failed to connect to {0}'
 	
+	'Test-KrbPasswordReset.FailedDCResolution'	    = 'Failed to resolve domain controllers from {0} to test synchronization against. Ensure AD services are available.'
 	'Test-KrbPasswordReset.CreatingCanary'		    = 'Creating canary account to test password reset: {0}'
 	'Test-KrbPasswordReset.FailedCanaryCreation'    = 'Failed to create the canary account: {0}'
 	'Test-KrbPasswordReset.ResettingPassword'	    = 'Resetting password for account: {0}'
