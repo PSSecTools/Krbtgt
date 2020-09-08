@@ -48,19 +48,19 @@
 	)
 	
 	# Cmdlets to export from this module
-	CmdletsToExport   = ''
+	# CmdletsToExport   = ''
 	
 	# Variables to export from this module
-	VariablesToExport = ''
+	# VariablesToExport = ''
 	
 	# Aliases to export from this module
-	AliasesToExport   = ''
+	# AliasesToExport   = ''
 	
 	# List of all modules packaged with this module
-	ModuleList	      = @()
+	# ModuleList	      = @()
 	
 	# List of all files packaged with this module
-	FileList		  = @()
+	# FileList		  = @()
 	
 	# Private data to pass to the module specified in ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 	PrivateData	      = @{
@@ -69,19 +69,19 @@
 		PSData = @{
 			
 			# Tags applied to this module. These help with module discovery in online galleries.
-			# Tags = @()
+			Tags = @('krbtgt', 'security', 'ad', 'activedirectory', 'password')
 			
 			# A URL to the license for this module.
-			# LicenseUri = ''
+			LicenseUri = 'https://github.com/PSSecTools/Krbtgt/blob/development/LICENSE'
 			
 			# A URL to the main website for this project.
-			# ProjectUri = ''
+			ProjectUri = 'https://github.com/PSSecTools/Krbtgt'
 			
 			# A URL to an icon representing this module.
 			# IconUri = ''
 			
 			# ReleaseNotes of this module
-			# ReleaseNotes = ''
+			ReleaseNotes = 'https://github.com/PSSecTools/Krbtgt/blob/development/Krbtgt/changelog.md'
 			
 		} # End of PSData hashtable
 		
