@@ -12,6 +12,9 @@
 	.PARAMETER Server
 		The domain controller to ask for the information.
 	
+	.PARAMETER Credential
+		The credentials to use for this operation.
+	
 	.PARAMETER Identity
 		The account to target.
 		Defaults to the krbtgt account, but can be used to apply to other accounts (eg: The krbtgt account for a RODC)
@@ -25,10 +28,14 @@
 	
 		Returns the krbtgt account information.
 #>
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
 	[CmdletBinding()]
 	param (
-		[string]
+		[PSFComputer]
 		$Server,
+		
+		[pscredential]
+		$Credential,
 		
 		[string]
 		$Identity = 'krbtgt',
@@ -40,16 +47,16 @@
 	begin
 	{
 		#region Prepare Preliminaries
+		$adParameter = $PSBoundParameters | ConvertTo-PSFHashtable -Include Server, Credential
 		$parameter = @{
 			Identity   = $Identity
 			Properties = 'PasswordLastSet'
 		}
-		if ($Server) { $parameter['Server'] = $Server }
+		$parameter += $adParameter
 		
 		try
 		{
-			if ($Server) { $domainName = (Get-ADDomain -Server $Server -ErrorAction Stop).DNSRoot }
-			else { $domainName = (Get-ADDomain -ErrorAction Stop).DNSRoot }
+			$domainObject = Get-ADDomain @adParameter -ErrorAction Stop
 		}
 		catch
 		{
@@ -82,14 +89,21 @@
 		#region Retrieve Kerberos Policies
 		try
 		{
-			Write-PSFMessage -String 'Get-KrbAccount.ScanningKerberosPolicy' -StringValues $domainName
-			[xml]$gpo = Get-GPOReport -Guid '{31B2F340-016D-11D2-945F-00C04FB984F9}' -ReportType Xml -ErrorAction Stop -Domain $domainName
+			Write-PSFMessage -String 'Get-KrbAccount.ScanningKerberosPolicy' -StringValues $domainObject.DNSRoot
+			if ($Credential)
+			{
+				[xml]$gpo = Invoke-PSFCommand -ComputerName $domainObject.PDCEmulator -Credential $Credential -ScriptBlock {
+					param ($DomainName)
+					Get-GPOReport -Guid '{31B2F340-016D-11D2-945F-00C04FB984F9}' -ReportType Xml -ErrorAction Stop -Domain $DomainName -Server localhost
+				} -ErrorAction Stop -ArgumentList $domainObject.DNSRoot
+			}
+			[xml]$gpo = Get-GPOReport -Guid '{31B2F340-016D-11D2-945F-00C04FB984F9}' -ReportType Xml -ErrorAction Stop -Domain $domainObject.DNSRoot
 			$result.MaxTgtLifetimeHours = (($gpo.gpo.Computer.ExtensionData | Where-Object { $_.name -eq 'Security' }).Extension.ChildNodes | Where-Object { $_.Name -eq 'MaxTicketAge' }).SettingNumber
 			$result.MaxClockSkewMinutes = (($gpo.gpo.Computer.ExtensionData | Where-Object { $_.name -eq 'Security' }).Extension.ChildNodes | Where-Object { $_.Name -eq 'MaxClockSkew' }).SettingNumber
 		}
 		catch
 		{
-			Write-PSFMessage -Level Warning -String 'Get-KrbAccount.FailedKerberosPolicyLookup' -StringValues $domainName -ErrorRecord $_
+			Write-PSFMessage -Level Warning -String 'Get-KrbAccount.FailedKerberosPolicyLookup' -StringValues $domainObject.DNSRoot -ErrorRecord $_
 		}
 		#endregion Retrieve Kerberos Policies
 		

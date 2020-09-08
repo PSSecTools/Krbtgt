@@ -14,6 +14,9 @@
 	.PARAMETER Server
 		The server to retrieve the information from.
 	
+	.PARAMETER Credential
+		The credentials to use for this operation.
+	
 	.EXAMPLE
 		PS C:\> Get-RODomainController
 	
@@ -25,16 +28,19 @@
 		$Name = "*",
 		
 		[string]
-		$Server
+		$Server,
+		
+		[PSCredential]
+		$Credential
 	)
 	
 	begin
 	{
+		$adParameter = ($PSBoundParameters | ConvertTo-PSFHashtable -Include Server, Credential)
 		$parameter = @{
 			LdapFilter = "(&(primaryGroupID=521)(name=$Name))"
 			Properties = 'msDS-KrbTgtLink'
-		}
-		if ($Server) { $parameter["Server"] = $Server }
+		} + $adParameter
 	}
 	process
 	{
@@ -42,12 +48,12 @@
 		foreach ($rodc in $rodcs)
 		{
 			$domainDN = ($rodc.DistinguishedName -split "," | Where-Object { $_ -like "DC=*" }) -join ','
-			$siteServerObjects = Get-ADObject -LDAPFilter "(&(objectClass=server)(dnsHostName=$($rodc.DNSHostName)))" -SearchBase "CN=Sites,CN=Configuration,$($domainDN)"
+			$siteServerObjects = Get-ADObject @adParameter -LDAPFilter "(&(objectClass=server)(dnsHostName=$($rodc.DNSHostName)))" -SearchBase "CN=Sites,CN=Configuration,$($domainDN)"
 			$replicationPartner = @()
 			foreach ($siteServerObject in $siteServerObjects)
 			{
-				$fromServer = (Get-ADObject -SearchBase $siteServerObject.DistinguishedName -LDAPFilter '(objectClass=nTDSConnection)' -Properties FromServer).FromServer
-				$replicationPartner += (Get-ADObject $fromServer.Split(",", 2)[1] -Properties dNSHostName).dNSHostName
+				$fromServer = (Get-ADObject @adParameter -SearchBase $siteServerObject.DistinguishedName -LDAPFilter '(objectClass=nTDSConnection)' -Properties FromServer).FromServer
+				$replicationPartner += (Get-ADObject @adParameter $fromServer.Split(",", 2)[1] -Properties dNSHostName).dNSHostName
 			}
 			
 			[PSCustomObject]@{

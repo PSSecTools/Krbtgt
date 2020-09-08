@@ -14,9 +14,16 @@
 	.PARAMETER TargetDC
 		The DC to replicate with.
 	
+	.PARAMETER Credential
+		Credentials to use for performing AD actions
+	
 	.PARAMETER Identity
 		The user identity to replicate.
 		Defaults to krbtgt.
+	
+	.PARAMETER ReplicationMode
+		Whether to trigger replication through WinRM or LDAP.
+		Defaults to LDAP
 	
 	.PARAMETER EnableException
 		This parameters disables user-friendly warnings and enables the throwing of exceptions.
@@ -24,7 +31,7 @@
 	
 	.EXAMPLE
 		PS C:\> Sync-KrbAccount -SourceDC 'dc1' -TargetDC 'dc2'
-	
+		
 		Replicates the krbtgt account between dc1 and dc2.
 #>
 	[CmdletBinding()]
@@ -37,8 +44,15 @@
 		[string]
 		$TargetDC,
 		
+		[System.Management.Automation.PSCredential]
+		$Credential,
+		
 		[string]
 		$Identity = 'krbtgt',
+		
+		[ValidateSet('LDAP', 'WinRM')]
+		[string]
+		$ReplicationMode = 'LDAP',
 		
 		[switch]
 		$EnableException
@@ -46,7 +60,8 @@
 	
 	begin
 	{
-		try { $krbtgtDN = (Get-ADUser -Identity $Identity -Server $TargetDC -ErrorAction Stop).DistinguishedName }
+		$credParam = $PSBoundParameters | ConvertTo-PSFHashtable -Include Credential
+		try { $krbtgtDN = (Get-ADUser @credParam -Identity $Identity -Server $TargetDC -ErrorAction Stop).DistinguishedName }
 		catch
 		{
 			Stop-PSFFunction -String 'Sync-KrbAccount.UserNotFound' -StringValues $Identity, $TargetDC -ErrorRecord $_
@@ -58,44 +73,58 @@
 		if (Test-PSFFunctionInterrupt) { return }
 		
 		$errorVar = @()
-		$pwdLastSet = [System.DateTime]::FromFileTimeUtc((Get-ADObject -Identity $krbtgtDN -Server $TargetDC -Properties PwdLastSet).PwdLastSet)
-		Write-PSFMessage -String 'Sync-KrbAccount.Connecting' -StringValues ($SourceDC -join ', '), $krbtgtDN -Target $SourceDC
-		Invoke-PSFCommand -ComputerName $SourceDC -ScriptBlock {
-			param (
-				$TargetDC,
-				
-				$KrbtgtDN,
-				
-				$PwdLastSet
-			)
-			
-			$message = repadmin.exe /replsingleobj $env:COMPUTERNAME $TargetDC $KrbtgtDN *>&1
-			$result = 0 -eq $LASTEXITCODE
-			
-			# Verify the password change was properly synced
-			$pwdLastSetLocal = [System.DateTime]::FromFileTimeUtc((Get-ADObject -Identity $KrbtgtDN -Server $env:COMPUTERNAME -Properties PwdLastSet).PwdLastSet)
-			if ($pwdLastSetLocal -ne $PwdLastSet) { $result = $false }
-			
-			[PSCustomObject]@{
-				ComputerName = $env:COMPUTERNAME
-				Success	     = $result
-				Message	     = ($message | Where-Object { $_ })
-				ExitCode	 = $LASTEXITCODE
-				Error	     = $null
-			}
-		} -ArgumentList $TargetDC, $krbtgtDN, $pwdLastSet -ErrorVariable errorVar -ErrorAction SilentlyContinue | Select-PSFObject -KeepInputObject -TypeName 'Krbtgt.SyncResult'
-		
-		foreach ($errorObject in $errorVar)
+		$pwdLastSet = [System.DateTime]::FromFileTimeUtc((Get-ADObject @credParam -Identity $krbtgtDN -Server $TargetDC -Properties PwdLastSet).PwdLastSet)
+		switch ($ReplicationMode)
 		{
-			Write-PSFMessage -Level Warning -Message 'Sync-KrbAccount.ConnectError' -StringValues $errorObject.TargetObject -ErrorRecord $errorObject
-			[PSCustomObject]@{
-				PSTypeName   = 'Krbtgt.SyncResult'
-				ComputerName = $errorObject.TargetObject
-				Success	     = $false
-				Message	     = $errorObject.Exception.Message
-				ExitCode	 = 1
-				Error	     = $errorObject
+			#region LDAP Based
+			'LDAP'
+			{
+				Sync-LdapObjectParallel @credParam -Object $krbtgtDN -Server $SourceDC -Target $TargetDC
 			}
+			#endregion LDAP Based
+			#region WinRM Based
+			'WinRM'
+			{
+				Write-PSFMessage -String 'Sync-KrbAccount.Connecting' -StringValues ($SourceDC -join ', '), $krbtgtDN -Target $SourceDC
+				Invoke-PSFCommand @credParam -ComputerName $SourceDC -ScriptBlock {
+					param (
+						$TargetDC,
+						
+						$KrbtgtDN,
+						
+						$PwdLastSet
+					)
+					
+					$message = repadmin.exe /replsingleobj $env:COMPUTERNAME $TargetDC $KrbtgtDN *>&1
+					$result = 0 -eq $LASTEXITCODE
+					
+					# Verify the password change was properly synced
+					$pwdLastSetLocal = [System.DateTime]::FromFileTimeUtc((Get-ADObject -Identity $KrbtgtDN -Server $env:COMPUTERNAME -Properties PwdLastSet).PwdLastSet)
+					if ($pwdLastSetLocal -ne $PwdLastSet) { $result = $false }
+					
+					[PSCustomObject]@{
+						ComputerName = $env:COMPUTERNAME
+						Success	     = $result
+						Message	     = ($message | Where-Object { $_ })
+						ExitCode	 = $LASTEXITCODE
+						Error	     = $null
+					}
+				} -ArgumentList $TargetDC, $krbtgtDN, $pwdLastSet -ErrorVariable errorVar -ErrorAction SilentlyContinue | Select-PSFObject -KeepInputObject -TypeName 'Krbtgt.SyncResult'
+				
+				foreach ($errorObject in $errorVar)
+				{
+					Write-PSFMessage -Level Warning -Message 'Sync-KrbAccount.ConnectError' -StringValues $errorObject.TargetObject -ErrorRecord $errorObject
+					[PSCustomObject]@{
+						PSTypeName   = 'Krbtgt.SyncResult'
+						ComputerName = $errorObject.TargetObject
+						Success	     = $false
+						Message	     = $errorObject.Exception.Message
+						ExitCode	 = 1
+						Error	     = $errorObject
+					}
+				}
+			}
+			#endregion WinRM Based
 		}
 	}
 }

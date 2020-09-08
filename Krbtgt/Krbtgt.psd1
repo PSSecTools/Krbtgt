@@ -3,7 +3,7 @@
 	RootModule	      = 'Krbtgt.psm1'
 	
 	# Version number of this module.
-	ModuleVersion	  = '1.0.1'
+	ModuleVersion	  = '1.1.7'
 	
 	# ID used to uniquely identify this module
 	GUID			  = '38a69268-94ad-40ff-93df-c31ad079183a'
@@ -26,7 +26,7 @@
 	# Modules that must be imported into the global environment prior to importing
 	# this module
 	RequiredModules   = @(
-		@{ ModuleName = 'PSFramework'; ModuleVersion = '1.0.12' }
+		@{ ModuleName = 'PSFramework'; ModuleVersion = '1.4.149' }
 	)
 	
 	# Assemblies that must be loaded prior to importing this module
