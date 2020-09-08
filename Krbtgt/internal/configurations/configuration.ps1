@@ -16,3 +16,4 @@ Set-PSFConfig -Module 'Krbtgt' -Name 'Import.IndividualFiles' -Value $false -Ini
 
 Set-PSFConfig -Module 'Krbtgt' -Name 'Reset.DCSuccessPercent' -Value 100 -Initialize -Validation 'integer' -Description 'The default minimum percentage of DCs that must successfully replicate a password reset request in order for the reset to be considered successful.'
 Set-PSFConfig -Module 'Krbtgt' -Name 'Reset.MaxDurationSeconds' -Value 180 -Initialize -Validation 'integer' -Description 'The default maximum replication duration (in seconds) in order for the reset to be considered successful.'
+Set-PSFConfig -Module 'Krbtgt' -Name 'Sync.Protocol' -Value 'LDAP' -Initialize -Validation 'Krbtgt.SyncProtocol' -Description 'The protocol to use when performing single-item replication, syncing the password.'

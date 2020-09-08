@@ -52,7 +52,7 @@
 		
 		[ValidateSet('LDAP', 'WinRM')]
 		[string]
-		$ReplicationMode = 'LDAP',
+		$ReplicationMode = (Get-PSFConfigValue -FullName 'Krbtgt.Sync.Protocol' -Fallback 'LDAP'),
 		
 		[switch]
 		$EnableException
