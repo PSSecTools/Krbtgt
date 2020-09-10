@@ -3,7 +3,7 @@
 	RootModule	      = 'Krbtgt.psm1'
 	
 	# Version number of this module.
-	ModuleVersion	  = '1.0.1'
+	ModuleVersion	  = '1.1.7'
 	
 	# ID used to uniquely identify this module
 	GUID			  = '38a69268-94ad-40ff-93df-c31ad079183a'
@@ -26,7 +26,7 @@
 	# Modules that must be imported into the global environment prior to importing
 	# this module
 	RequiredModules   = @(
-		@{ ModuleName = 'PSFramework'; ModuleVersion = '1.0.12' }
+		@{ ModuleName = 'PSFramework'; ModuleVersion = '1.4.149' }
 	)
 	
 	# Assemblies that must be loaded prior to importing this module
@@ -48,19 +48,19 @@
 	)
 	
 	# Cmdlets to export from this module
-	CmdletsToExport   = ''
+	# CmdletsToExport   = ''
 	
 	# Variables to export from this module
-	VariablesToExport = ''
+	# VariablesToExport = ''
 	
 	# Aliases to export from this module
-	AliasesToExport   = ''
+	# AliasesToExport   = ''
 	
 	# List of all modules packaged with this module
-	ModuleList	      = @()
+	# ModuleList	      = @()
 	
 	# List of all files packaged with this module
-	FileList		  = @()
+	# FileList		  = @()
 	
 	# Private data to pass to the module specified in ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 	PrivateData	      = @{
@@ -69,19 +69,19 @@
 		PSData = @{
 			
 			# Tags applied to this module. These help with module discovery in online galleries.
-			# Tags = @()
+			Tags = @('krbtgt', 'security', 'ad', 'activedirectory', 'password')
 			
 			# A URL to the license for this module.
-			# LicenseUri = ''
+			LicenseUri = 'https://github.com/PSSecTools/Krbtgt/blob/development/LICENSE'
 			
 			# A URL to the main website for this project.
-			# ProjectUri = ''
+			ProjectUri = 'https://github.com/PSSecTools/Krbtgt'
 			
 			# A URL to an icon representing this module.
 			# IconUri = ''
 			
 			# ReleaseNotes of this module
-			# ReleaseNotes = ''
+			ReleaseNotes = 'https://github.com/PSSecTools/Krbtgt/blob/development/Krbtgt/changelog.md'
 			
 		} # End of PSData hashtable
 		

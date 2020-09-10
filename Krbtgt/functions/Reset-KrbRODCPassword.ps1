@@ -13,6 +13,9 @@
 	.PARAMETER Server
 		The directory server to initially work against.
 	
+	.PARAMETER Credential
+		The credentials to use for this operation.
+	
 	.PARAMETER Force
 		By default, this command will refuse to reset the krbtgt account when there can still be a valid Kerberos ticket from before the last reset.
 		Essentially, this means there is a cooldown after each krbtgt password reset.
@@ -30,6 +33,7 @@
 		Resets the password of all RODC krbtgt accounts.
 #>
 	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
 	[CmdletBinding()]
 	param (
 		[string]
@@ -37,6 +41,9 @@
 		
 		[PSFComputer]
 		$Server,
+		
+		[PSCredential]
+		$Credential,
 		
 		[switch]
 		$Force,
@@ -48,13 +55,18 @@
 	begin
 	{
 		#region Resolve names & DCs to process
+		$credParam = @{ }
+		if ($Credential) { $credParam = @{ Credential = $Credential } }
+		$parameters = $credParam.Clone()
+		
 		if ($Server) { $pdcEmulatorInternal = $Server }
 		else
 		{
 			try
 			{
 				Write-PSFMessage -String 'Reset-KrbRODCPassword.ResolvePDC'
-				$pdcEmulatorInternal = (Get-ADDomain).PDCEmulator
+				$pdcEmulatorInternal = (Get-ADDomain @credParam).PDCEmulator
+				Write-PSFMessage -String 'Reset-KrbRODCPassword.ResolvePDC.Success' -StringValues $pdcEmulatorInternal
 			}
 			catch
 			{
@@ -62,14 +74,14 @@
 				return
 			}
 		}
-		Write-PSFMessage -String 'Reset-KrbRODCPassword.ResolvePDC.Success' -StringValues $pdcEmulatorInternal
+		$parameters.Server = $pdcEmulatorInternal
 		#endregion Resolve names & DCs to process
 	}
 	process
 	{
 		if (Test-PSFFunctionInterrupt) { return }
 		
-		foreach ($rodc in (Get-RODomainController -Name $Name -Server $Server))
+		foreach ($rodc in (Get-RODomainController @parameters -Name $Name))
 		{
 			$report = [PSCustomObject]@{
 				PSTypeName = 'Krbtgt.RODCResetResult'
@@ -88,7 +100,7 @@
 			try
 			{
 				Write-PSFMessage -String 'Reset-KrbRODCPassword.ReadKrbtgt' -StringValues $rodc.DnsHostName
-				$report.Account = Get-KrbAccount -Server $pdcEmulatorInternal -Identity $rodc.KerberosAccount -EnableException
+				$report.Account = Get-KrbAccount @parameters -Identity $rodc.KerberosAccount -EnableException
 				Write-PSFMessage -String 'Reset-KrbRODCPassword.ReadKrbtgt.Success' -StringValues $report.Account
 			}
 			catch
@@ -112,7 +124,7 @@
 			try
 			{
 				Write-PSFMessage -String 'Reset-KrbRODCPassword.ActualReset' -StringValues $rodc.DnsHostName
-				Reset-UserPassword -Server $rodc.ReplicationPartner[0] -Identity $rodc.KerberosAccount -EnableException
+				Reset-UserPassword @credParam -Server $rodc.ReplicationPartner[0] -Identity $rodc.KerberosAccount -EnableException
 				Write-PSFMessage -String 'Reset-KrbRODCPassword.ActualReset.Success' -StringValues $rodc.DnsHostName
 				$report.Reset = $true
 			}
@@ -127,7 +139,7 @@
 			
 			#region Resync Domain Controllers
 			Write-PSFMessage -String 'Reset-KrbRODCPassword.SyncAccount' -StringValues $rodc.DnsHostName, $rodc.ReplicationPartner[0]
-			$report.Sync = Sync-KrbAccount -SourceDC $rodc.DnsHostName -TargetDC $rodc.ReplicationPartner[0]
+			$report.Sync = Sync-KrbAccount @credParam -SourceDC $rodc.DnsHostName -TargetDC $rodc.ReplicationPartner[0]
 			$report.End = Get-Date
 			$report.Duration = $report.End - $report.Start
 			Write-PSFMessage -String 'Reset-KrbRODCPassword.ResetDuration' -StringValues $rodc.DnsHostName, $report.Duration

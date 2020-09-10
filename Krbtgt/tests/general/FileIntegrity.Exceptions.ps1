@@ -1,19 +1,22 @@
 ﻿# List of forbidden commands
 $global:BannedCommands = @(
-	'Write-Host',
-	'Write-Verbose',
-	'Write-Warning',
-	'Write-Error',
-	'Write-Output',
-	'Write-Information',
-	'Write-Debug',
+	'Write-Host'
+	'Write-Verbose'
+	'Write-Warning'
+	'Write-Error'
+	'Write-Output'
+	'Write-Information'
+	'Write-Debug'
 	
 	# Use CIM instead where possible
-	'Get-WmiObject',
-	'Invoke-WmiMethod',
-	'Register-WmiEvent',
-	'Remove-WmiObject',
+	'Get-WmiObject'
+	'Invoke-WmiMethod'
+	'Register-WmiEvent'
+	'Remove-WmiObject'
 	'Set-WmiInstance'
+
+	# Use Get-WinEvent instead
+	'Get-EventLog'
 )
 
 <#
@@ -28,7 +31,7 @@ $global:MayContainCommand = @{
 	"Write-Verbose" = @()
 	"Write-Warning" = @()
 	"Write-Error"  = @('Reset-KrbPassword.ps1', 'Reset-KrbRODCPassword.ps1')
-	"Write-Output" = @()
+	"Write-Output" = @('Get-LdapObject.ps1')
 	"Write-Information" = @()
 	"Write-Debug" = @()
 }

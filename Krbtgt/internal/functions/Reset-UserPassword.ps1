@@ -13,6 +13,9 @@
 	.PARAMETER Server
 		The server to execute this against.
 	
+	.PARAMETER Credential
+		The credentials to use for this operation.
+	
 	.PARAMETER Password
 		The password to apply.
 		Defaults to a random password.
@@ -27,6 +30,7 @@
 		Resets the password on the krbtgt account.
 #>
 	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
 	[CmdletBinding()]
 	Param (
 		[Parameter(Mandatory = $true)]
@@ -35,6 +39,9 @@
 
 		[string]
 		$Server,
+		
+		[PSCredential]
+		$Credential,
 
 		[SecureString]
 		$Password = (New-Password -AsSecureString),
@@ -49,8 +56,7 @@
 			Identity = $Identity
 			NewPassword = $Password
 			ErrorAction = 'Stop'
-		}
-		if ($Server) { $parameters["Server"] = $Server }
+		} + ($PSBoundParameters | ConvertTo-PSFHashtable -Include Server, Credential)
 	}
 	process
 	{
