@@ -14,6 +14,9 @@
 	.PARAMETER DomainController
 		The domain controller to synchronize with.
 	
+	.PARAMETER Credential
+		The credentials to use for this operation.
+	
 	.PARAMETER MaxDurationSeconds
 		The maximum number of seconds a switch may take before being considered a failure.
 		Defaults to 180 seconds
@@ -31,6 +34,7 @@
 	
 		Tests the account password reset using a dummy account and returns, whether the execution would have been successful.
 #>
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
 	[CmdletBinding()]
 	param (
 		[string]
@@ -38,6 +42,9 @@
 		
 		[PSFComputer[]]
 		$DomainController,
+		
+		[PSCredential]
+		$Credential,
 		
 		[int]
 		$MaxDurationSeconds = (Get-PSFConfigValue -FullName 'Krbtgt.Reset.MaxDurationSeconds' -Fallback 100),
@@ -52,11 +59,19 @@
 	begin
 	{
 		#region Ensure Domain Controller parameter is filled
+		$parameters = @{ Server = $PDCEmulator }
+		$credParam = @{ }
+		if ($Credential)
+		{
+			$parameters['Credential'] = $Credential
+			$credParam = @{ Credential = $Credential }
+		}
+		
 		if (-not $DomainController)
 		{
 			try
 			{
-				$DomainController = (Get-ADDomainController -Server $PDCEmulator -Filter * -ErrorAction Stop).HostName | Where-Object {
+				$DomainController = (Get-ADDomainController @parameters -Filter * -ErrorAction Stop).HostName | Where-Object {
 					$_ -ne $PDCEmulator
 				}
 			}
@@ -73,7 +88,7 @@
 		{
 			$randomName = "krbtgt_test_$(Get-Random -Minimum 100 -Maximum 999)"
 			Write-PSFMessage -String 'Test-KrbPasswordReset.CreatingCanary' -StringValues $randomName
-			$canaryAccount = New-ADUser -Name $randomName -PassThru -Server $PDCEmulator -ErrorAction Stop
+			$canaryAccount = New-ADUser -Name $randomName -PassThru @parameters -ErrorAction Stop
 		}
 		catch
 		{
@@ -110,7 +125,7 @@
 		Write-PSFMessage -String 'Test-KrbPasswordReset.ResettingPassword' -StringValues $canaryAccount.DistinguishedName -Target $canaryAccount.DistinguishedName
 		try
 		{
-			Reset-UserPassword -Server $PDCEmulator -Identity $canaryAccount.DistinguishedName -EnableException
+			Reset-UserPassword @parameters -Identity $canaryAccount.DistinguishedName -EnableException
 			$result.Reset = $true
 		}
 		catch
@@ -125,7 +140,7 @@
 		
 		#region Test 2: Resync Domain Controllers
 		Write-PSFMessage -String 'Test-KrbPasswordReset.SynchronizingCanary' -StringValues $canaryAccount.DistinguishedName -Target $canaryAccount.DistinguishedName
-		$result.Sync = Sync-KrbAccount -SourceDC $DomainController -TargetDC $PDCEmulator -Identity $canaryAccount.DistinguishedName -EnableException:$false
+		$result.Sync = Sync-KrbAccount @credParam -SourceDC $DomainController -TargetDC $PDCEmulator -Identity $canaryAccount.DistinguishedName -EnableException:$false
 		$result.End = Get-Date
 		$result.Duration = $result.End - $result.Start
 		$result.DCSuccess = $result.Sync | Where-Object Success
@@ -153,7 +168,7 @@
 		if (Test-PSFFunctionInterrupt) { return }
 		
 		# Remove the test account after finishing its work
-		try { $canaryAccount | Remove-ADUser -Server $PDCEmulator -Confirm:$false -ErrorAction Stop }
+		try { $canaryAccount | Remove-ADUser @parameters -Confirm:$false -ErrorAction Stop }
 		catch
 		{
 			Stop-PSFFunction -String 'Test-KrbPasswordReset.FailedCanaryCleanup' -StringValues $canaryAccount.DistinguishedName

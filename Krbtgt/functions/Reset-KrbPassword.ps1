@@ -17,6 +17,9 @@
 		Will default against the local domain's PDC Emulator.
 		The actual password reset is executed against this computer, all manual replication commands will replicate with this.
 	
+	.PARAMETER Credential
+		The credentials to use for this operation.
+	
 	.PARAMETER MaxDurationSeconds
 		The maximum execution duration for the reset.
 		Exceeding this duration will NOT interrupt the switch, but:
@@ -48,6 +51,7 @@
 		Resets the current domain's krbtgt account.
 #>
 	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
 	[CmdletBinding()]
 	param (
 		[PSFComputer[]]
@@ -55,6 +59,9 @@
 		
 		[PSFComputer]
 		$PDCEmulator,
+		
+		[PSCredential]
+		$Credential,
 		
 		[int]
 		$MaxDurationSeconds = (Get-PSFConfigValue -FullName 'Krbtgt.Reset.MaxDurationSeconds' -Fallback 100),
@@ -76,11 +83,16 @@
 	{
 		#region Resolve names & DCs to process
 		Write-PSFMessage -String 'Reset-KrbPassword.DomainResolve'
+		$credParam = @{ }
+		if ($Credential) { $credParam = @{ Credential = $Credential } }
+		$parameters = $credParam.Clone()
 		try
 		{
 			if ($PDCEmulator) { $pdcEmulatorInternal = $PDCEmulator }
-			else { $pdcEmulatorInternal = (Get-ADDomain -ErrorAction Stop).PDCEmulator }
-			$rwDomainControllers = Get-ADDomainController -Filter { IsReadOnly -eq $false } -Server $pdcEmulatorInternal -ErrorAction Stop | Where-Object {
+			else { $pdcEmulatorInternal = (Get-ADDomain @credParam -ErrorAction Stop).PDCEmulator }
+			$parameters.Server = $pdcEmulatorInternal
+			
+			$rwDomainControllers = Get-ADDomainController @parameters -Filter { IsReadOnly -eq $false } -ErrorAction Stop | Where-Object {
 				($_.Name -ne $pdcEmulatorInternal.ComputerName) -and ("$($_.Name).$($_.Forest)" -ne $pdcEmulatorInternal.ComputerName)
 			}
 			if ($DomainController)
@@ -117,7 +129,7 @@
 		try
 		{
 			Write-PSFMessage -String 'Reset-KrbPassword.ReadKrbtgt'
-			$report.Account = Get-KrbAccount -Server $pdcEmulatorInternal -EnableException
+			$report.Account = Get-KrbAccount @parameters -EnableException
 			Write-PSFMessage -String 'Reset-KrbPassword.ReadKrbtgt.Success' -StringValues $report.Account
 		}
 		catch
@@ -139,7 +151,7 @@
 		if (-not $SkipTest)
 		{
 			Write-PSFMessage -String 'Reset-KrbPassword.TestReset'
-			$report.Test = Test-KrbPasswordReset -MaxDurationSeconds $MaxDurationSeconds -PDCEmulator $pdcEmulatorInternal -DomainController $rwDomainControllers -DCSuccessPercent $DCSuccessPercent
+			$report.Test = Test-KrbPasswordReset @credParam -MaxDurationSeconds $MaxDurationSeconds -PDCEmulator $pdcEmulatorInternal -DomainController $rwDomainControllers -DCSuccessPercent $DCSuccessPercent
 			if ($report.Test.Errors)
 			{
 				Write-PSFMessage -Level Warning -String 'Reset-KrbPassword.TestReset.ErrorCount' -StringValues ($report.Test.Errors | Measure-Object).Count
@@ -164,7 +176,7 @@
 		try
 		{
 			Write-PSFMessage -String 'Reset-KrbPassword.ActualReset'
-			Reset-UserPassword -Server $pdcEmulatorInternal -Identity 'krbtgt' -EnableException
+			Reset-UserPassword @parameters -Identity 'krbtgt' -EnableException
 			Write-PSFMessage -String 'Reset-KrbPassword.ActualReset.Success'
 			$report.Reset = $true
 		}
@@ -179,7 +191,7 @@
 		
 		#region Resync Domain Controllers
 		Write-PSFMessage -String 'Reset-KrbPassword.SyncAccount'
-		$report.Sync = Sync-KrbAccount -SourceDC $rwDomainControllers -TargetDC $pdcEmulatorInternal
+		$report.Sync = Sync-KrbAccount @credParam -SourceDC $rwDomainControllers -TargetDC $pdcEmulatorInternal
 		$report.End = Get-Date
 		$report.Duration = $report.End - $report.Start
 		Write-PSFMessage -String 'Reset-KrbPassword.ResetDuration' -StringValues $report.Duration

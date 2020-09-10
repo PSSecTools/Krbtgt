@@ -8,6 +8,10 @@
 	'Get-KrbAccount.FailedKerberosPolicyLookup'	    = 'Could not lookup MaxTicketAge (default 10 hrs) and MaxClockSkew (default 5 mins) from domain {0}, so default values will be assumed.'
 	'Get-KrbAccount.Success'					    = 'Data successful retrieved. Account {0} with a timeout at {1:yyyy-MM-dd HH:mm:ss}'
 	
+	'Get-LdapObject.SearchError'				    = 'Failed to execute ldap request.'
+	'Get-LdapObject.Searchfilter'				    = 'Searching with filter: {0}'
+	'Get-LdapObject.SearchRoot'					    = 'Searching {0} in {1}'
+	
 	'Reset-KrbPassword.DomainResolve'			    = 'Resolving Domain Name, PDC Emulator and member domain controllers.'
 	'Reset-KrbPassword.DomainResolve.Success'	    = 'Successfully resolved domain information, operating against {0}'
 	'Reset-KrbPassword.DomainResolve.Failed'	    = 'Failed to resolve domain Name, PDC Emulator and member domain controllers.'
@@ -50,6 +54,14 @@
 	'Sync-KrbAccount.UserNotFound'				    = 'Failed to find {0} on {1}'
 	'Sync-KrbAccount.Connecting'				    = 'Connecting to "{0}" in order to synchronize {1}'
 	'Sync-KrbAccount.ConnectError'				    = 'Failed to connect to {0}'
+	
+	'Sync-LdapObject.SyncObjectFilter'			    = 'Resolved object input to LDAP filter: {0}'
+	'Sync-LdapObject.ObjectAccessError'			    = 'Error trying to resolve {0} | {1}'
+	'Sync-LdapObject.ObjectNotFound'			    = 'Failed to resolve {0} to an object'
+	'Sync-LdapObject.DestinationAccessError'	    = 'Failed to connect to destination server {0} | {1}'
+	'Sync-LdapObject.SourceAccessError'			    = 'Failed to connect to source server {0} | {1}'
+	'Sync-LdapObject.PerformingReplication'		    = 'Performing replication from {0} to {1}'
+	'Sync-LdapObject.FailedReplication'			    = 'Failed to synchronize {0} from {1} to {2} | {3}'
 	
 	'Test-KrbPasswordReset.FailedDCResolution'	    = 'Failed to resolve domain controllers from {0} to test synchronization against. Ensure AD services are available.'
 	'Test-KrbPasswordReset.CreatingCanary'		    = 'Creating canary account to test password reset: {0}'
