@@ -113,7 +113,7 @@
 				
 				foreach ($errorObject in $errorVar)
 				{
-					Write-PSFMessage -Level Warning -Message 'Sync-KrbAccount.ConnectError' -StringValues $errorObject.TargetObject -ErrorRecord $errorObject
+					Write-PSFMessage -Level Warning -String 'Sync-KrbAccount.ConnectError' -StringValues $errorObject.TargetObject -ErrorRecord $errorObject
 					[PSCustomObject]@{
 						PSTypeName   = 'Krbtgt.SyncResult'
 						ComputerName = $errorObject.TargetObject

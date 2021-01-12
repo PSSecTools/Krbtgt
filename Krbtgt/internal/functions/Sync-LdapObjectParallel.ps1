@@ -26,6 +26,11 @@
 	.PARAMETER Credential
 		Credentials to use when connecting to the Server(s).
 		No connecting credentials for the target server are necessary, as this is handled by the servers operated against.
+
+	.PARAMETER Reverse
+		Reverse the sync order.
+		By default, each server is instructed to replicate with the target.
+		By reversing this, the target is instructed to replicate with each server instead.
 	
 	.PARAMETER Configuration
 		Whether the object being replicated is in the configuration partition.
@@ -55,6 +60,9 @@
 		
 		[PSCredential]
 		$Credential,
+
+		[switch]
+		$Reverse,
 		
 		[switch]
 		$Configuration
@@ -70,7 +78,7 @@
 			& (Get-Module krbtgt) {
 				try
 				{
-					Sync-LdapObject @Settings
+					$null = Sync-LdapObject @Settings
 					[PSCustomObject]@{
 						ComputerName = $Settings.Server
 						Success	     = $true
@@ -96,7 +104,8 @@
 		#endregion Scriptblock
 		
 		$parameters = $PSBoundParameters | ConvertTo-PSFHashtable -Include Object, Target, Configuration, Credential
-		
+		if ($Reverse) { $parameters.Server = $Target }
+
 		$initialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
 		$initialSessionState.ImportPSModule(("{0}\PSFramework.psd1" -f (Get-Module PSFramework).ModuleBase))
 		$initialSessionState.ImportPSModule(("{0}\krbtgt.psd1" -f (Get-Module krbtgt).ModuleBase))
@@ -112,7 +121,8 @@
 		foreach ($serverName in $Server)
 		{
 			$tempParameters = $parameters.Clone()
-			$tempParameters.Server = $serverName
+			if ($Reverse) { $tempParameters.Target = $serverName }
+			else { $tempParameters.Server = $serverName }
 			$runspace = [PowerShell]::Create()
 			$null = $runspace.AddScript($scriptBlock)
 			$null = $runspace.AddArgument($tempParameters)

@@ -12,7 +12,7 @@ if ($SkipTest) { return }
 $global:__pester_data.ScriptAnalyzer = New-Object System.Collections.ArrayList
 
 Describe 'Invoking PSScriptAnalyzer against commandbase' {
-	$commandFiles = Get-ChildItem -Path $CommandPath -Recurse | Where-Object Name -like "*.ps1"
+	$commandFiles = foreach ($basePath in $CommandPath) { Get-ChildItem -Path $basePath -Recurse | Where-Object Name -like "*.ps1" }
 	$scriptAnalyzerRules = Get-ScriptAnalyzerRule
 	
 	foreach ($file in $commandFiles)
