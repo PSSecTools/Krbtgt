@@ -163,8 +163,9 @@
 			}
 			if (-not $report.Test.Success)
 			{
-				$report.Error = Write-Error "Test Reset Failed: $($report.Test.StatusCode)" 2>&1
-				Stop-PSFFunction -String 'Reset-KrbPassword.TestReset.Failed' -StringValues $report.Test.StatusCode -ErrorRecord $report.Error -Cmdlet $PSCmdlet
+				$report.Test.Status = $report.Test.Status.Trim(", ")
+				$report.Error = Write-Error "Test Reset Failed: $($report.Test.Status)" 2>&1
+				Stop-PSFFunction -String 'Reset-KrbPassword.TestReset.Failed' -StringValues $report.Test.Status -ErrorRecord $report.Error -Cmdlet $PSCmdlet -OverrideExceptionMessage
 				return $report
 			}
 		}

@@ -95,6 +95,12 @@
 			Stop-PSFFunction -String 'Test-KrbPasswordReset.FailedCanaryCreation' -StringValues $randomName -ErrorRecord $_
 			return
 		}
+		try {
+			$null = Sync-LdapObjectParallel @credParam -Object $canaryAccount -Server $DomainController -Target $PDCEmulator -Reverse
+		}
+		catch {
+			# We don't care
+		}
 		#endregion Create a test account to test SO replication with
 	}
 	process
@@ -115,7 +121,7 @@
 			DCFailed    = @()
 			Errors	    = @()
 			Success	    = $true
-			Status	    = ''
+			Status	    = $null
 			RWDCs	    = $DomainController
 		}
 		
@@ -144,6 +150,7 @@
 		$result.End = Get-Date
 		$result.Duration = $result.End - $result.Start
 		$result.DCSuccess = $result.Sync | Where-Object Success
+		$result.DCFailed =  $result.Sync | Where-Object Success -EQ $false
 		$result.DCSuccessPercent = ($result.DCSuccess | Measure-Object).Count / $result.DCTotal * 100
 		$result.Sync.Error | ForEach-Object {
 			if ($_) { $result.Errors += $_ }
