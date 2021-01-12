@@ -11,5 +11,5 @@ jobs:
       run: .\build\vsts-prerequisites.ps1
       shell: powershell
     - name: Validate
-      run: .\build\vsts-validate.ps1
+      run: .\build\vsts-validate.ps1 -MockADModule
       shell: powershell

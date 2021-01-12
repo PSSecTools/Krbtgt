@@ -14,7 +14,7 @@ jobs:
       run: .\build\vsts-prerequisites.ps1
       shell: powershell
     - name: Validate
-      run: .\build\vsts-validate.ps1
+      run: .\build\vsts-validate.ps1 -MockADModule
       shell: powershell
     - name: Build
       run: .\build\vsts-build.ps1 -ApiKey $env:APIKEY

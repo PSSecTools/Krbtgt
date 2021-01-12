@@ -9,7 +9,10 @@
 	
 	$Include = "*",
 	
-	$Exclude = ""
+	$Exclude = "",
+
+	[switch]
+	$MockADModule
 )
 
 Write-PSFMessage -Level Important -Message "Starting Tests"
@@ -17,7 +20,7 @@ Write-PSFMessage -Level Important -Message "Starting Tests"
 Write-PSFMessage -Level Important -Message "Importing Module"
 
 # Fake AD Module for automated testing in AzDev
-if ($env:SYSTEM_DEFAULTWORKINGDIRECTORY)
+if ($env:SYSTEM_DEFAULTWORKINGDIRECTORY -or $MockADModule)
 {
 	New-Module -Name ActiveDirectory -ScriptBlock { } | Import-Module
 }
