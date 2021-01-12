@@ -61,7 +61,6 @@
 	'Sync-LdapObject.DestinationAccessError'	    = 'Failed to connect to destination server {0} | {1}'
 	'Sync-LdapObject.SourceAccessError'			    = 'Failed to connect to source server {0} | {1}'
 	'Sync-LdapObject.PerformingReplication'		    = 'Performing replication from {0} to {1}'
-	'Sync-LdapObject.FailedReplication'			    = 'Failed to synchronize {0} from {1} to {2} | {3}'
 	
 	'Test-KrbPasswordReset.FailedDCResolution'	    = 'Failed to resolve domain controllers from {0} to test synchronization against. Ensure AD services are available.'
 	'Test-KrbPasswordReset.CreatingCanary'		    = 'Creating canary account to test password reset: {0}'

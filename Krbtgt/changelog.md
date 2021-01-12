@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## 1.1.10 (2021-01-12)
+
+- Upd: Test-KrbPasswordReset - added explicit replication of canary account to reduce failure due to ad object not found
+- Fix: Test-KrbPasswordReset - cleaned up result object and filled DCFailed
+- Fix: Reset-KrbPassword - cleaned up error reporting
+
 ## 1.1.7 (2020-09-08)
 
 - Upd: All commands - New single item replication option: LDAP (instead of WinRM). LDAP new default

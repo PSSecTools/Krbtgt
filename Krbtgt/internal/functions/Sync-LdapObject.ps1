@@ -103,15 +103,9 @@
 		
 		$replicationCommand = '{0}:<GUID={1}>' -f $srcRootDSE.dsServiceName.ToString(), $objectGUID
 		
-		Write-PSFMessage -String 'Sync-LdapObject.PerformingReplication' -StringValues $Server, $Target -Target $Object
-		if (Test-PSFShouldProcess -ActionString 'LDAP.Sync-LdapObject.PerformingReplication' -ActionStringValues $Server, $Target -Target $Object -PSCmdlet $PSCmdlet)
-		{
-			$dstRootDSE.Put("replicateSingleObject", $replicationCommand)
-			try { $dstRootDSE.SetInfo() }
-			catch
-			{
-				Stop-PSFFunction @stopDefault -String 'Sync-LdapObject.FailedReplication' -StringValues $Object, $Server, $Target, $_ -ErrorRecord $_ -OverrideExceptionMessage
-			}
-		}
+		$null = $dstRootDSE.Put("replicateSingleObject", $replicationCommand)
+		Invoke-PSFProtectedCommand -ActionString 'Sync-LdapObject.PerformingReplication' -ActionStringValues $Server, $Target -Target $Object -ScriptBlock {
+			$null = $dstRootDSE.SetInfo()
+		} -EnableException $EnableException -PSCmdlet $PSCmdlet -RetryCount 2 -RetryWait 1
 	}
 }

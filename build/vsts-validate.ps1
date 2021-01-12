@@ -4,4 +4,10 @@
 # Needs to ensure things are Done Right and only legal commits to master get built
 
 # Run internal pester tests
-& "$PSScriptRoot\..\krbtgt\tests\pester.ps1"
+
+[CmdletBinding()]
+param (
+	[switch]
+	$MockADModule
+)
+& "$PSScriptRoot\..\krbtgt\tests\pester.ps1" -MockADModule:$MockADModule
