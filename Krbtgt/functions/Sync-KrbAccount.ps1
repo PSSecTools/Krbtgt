@@ -79,7 +79,7 @@
 			#region LDAP Based
 			'LDAP'
 			{
-				Sync-LdapObjectParallel @credParam -Object $krbtgtDN -Server $SourceDC -Target $TargetDC
+				Sync-LdapObjectParallel @credParam -Object $krbtgtDN -Server $SourceDC -Target $TargetDC -Reverse
 			}
 			#endregion LDAP Based
 			#region WinRM Based
