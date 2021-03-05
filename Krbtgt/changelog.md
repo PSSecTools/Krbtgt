@@ -1,5 +1,9 @@
 ﻿# Changelog
 
+## 1.1.11 (2021-03-05)
+
+- Fix: Sync-KrbAccount - LDAP-based replication fails on new objects, reversed replication command direction
+
 ## 1.1.10 (2021-01-12)
 
 - Upd: Test-KrbPasswordReset - added explicit replication of canary account to reduce failure due to ad object not found
