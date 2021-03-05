@@ -3,7 +3,7 @@
 	RootModule	      = 'Krbtgt.psm1'
 	
 	# Version number of this module.
-	ModuleVersion	  = '1.1.10'
+	ModuleVersion	  = '1.1.11'
 	
 	# ID used to uniquely identify this module
 	GUID			  = '38a69268-94ad-40ff-93df-c31ad079183a'
@@ -15,7 +15,7 @@
 	CompanyName	      = ' '
 	
 	# Copyright statement for this module
-	Copyright		  = 'Copyright (c) 2019 Friedrich Weinmann'
+	Copyright		  = 'Copyright (c) 2021 Friedrich Weinmann'
 	
 	# Description of the functionality provided by this module
 	Description	      = 'Module to manage and reset the Krbtgt account & Password'
@@ -26,7 +26,7 @@
 	# Modules that must be imported into the global environment prior to importing
 	# this module
 	RequiredModules   = @(
-		@{ ModuleName = 'PSFramework'; ModuleVersion = '1.4.150' }
+		@{ ModuleName = 'PSFramework'; ModuleVersion = '1.5.172' }
 	)
 	
 	# Assemblies that must be loaded prior to importing this module
