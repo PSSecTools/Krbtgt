@@ -56,7 +56,7 @@
 		$Target,
 		
 		[int]
-		$Throttle = ($env:NUMBER_OF_PROCESSORS * 8),
+		$Throttle = ([int] $env:NUMBER_OF_PROCESSORS) * 8,
 		
 		[PSCredential]
 		$Credential,
