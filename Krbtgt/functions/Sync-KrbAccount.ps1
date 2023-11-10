@@ -95,15 +95,15 @@
 						$PwdLastSet
 					)
 					
-					$message = repadmin.exe /replsingleobj $env:COMPUTERNAME $TargetDC $KrbtgtDN *>&1
+					$message = repadmin.exe /replsingleobj $TargetDC $SourceDC $KrbtgtDN *>&1
 					$result = 0 -eq $LASTEXITCODE
 					
 					# Verify the password change was properly synced
-					$pwdLastSetLocal = [System.DateTime]::FromFileTimeUtc((Get-ADObject -Identity $KrbtgtDN -Server $env:COMPUTERNAME -Properties PwdLastSet).PwdLastSet)
+					$pwdLastSetLocal = [System.DateTime]::FromFileTimeUtc((Get-ADObject -Identity $KrbtgtDN -Server $SourceDC -Properties PwdLastSet).PwdLastSet)
 					if ($pwdLastSetLocal -ne $PwdLastSet) { $result = $false }
 					
 					[PSCustomObject]@{
-						ComputerName = $env:COMPUTERNAME
+						ComputerName = SourceDC
 						Success	     = $result
 						Message	     = ($message | Where-Object { $_ })
 						ExitCode	 = $LASTEXITCODE
