@@ -103,7 +103,7 @@
 					if ($pwdLastSetLocal -ne $PwdLastSet) { $result = $false }
 					
 					[PSCustomObject]@{
-						ComputerName = SourceDC
+						ComputerName = $SourceDC
 						Success	     = $result
 						Message	     = ($message | Where-Object { $_ })
 						ExitCode	 = $LASTEXITCODE
